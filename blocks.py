@@ -1,43 +1,13 @@
 import pygame
 
-blockSize = 25
+BLOCKSIZE = 25
 SPEED = 5
 
-class Block:
-    def __init__(self, win, x, y, color):
-        self.win = win
-        self.x = x
-        self.y = y
-        self.color = color
-    
-    def draw(self):
-        pygame.draw.rect(self.win, self.color, (self.x, (self.y + 5), blockSize, (blockSize - 5)))
+
 
 
 # Snake classes
-class Head:
-    def __init__(self, block, dir):
-        self.block = block
-        self.dir = dir
-
-    # Change direction of snake head
-    def changeDir(self, newDir):
-        self.dir = newDir
-
-    # Move and draw block
-    def move(self):
-        if self.dir == "Up":
-            self.block.y -= blockSize
-        elif self.dir == "Down":
-            self.block.y += blockSize
-        elif self.dir == "Left":
-            self.block.x -= blockSize
-        elif self.dir == "Right":
-            self.block.x += blockSize
-
-        self.block.draw()
-
-class NBody:
+class Body:
     def __init__(self, win, x, y, dir, color ):
         self.win = win
         self.x = x
@@ -59,10 +29,10 @@ class NBody:
             self.x += SPEED
 
     def draw(self):
-        pygame.draw.rect(self.win, self.color, (self.x, (self.y + 5), blockSize, (blockSize - 5)))
+        pygame.draw.rect(self.win, self.color, (self.x, (self.y + 5), BLOCKSIZE, (BLOCKSIZE - 5)))
 
 
-class Tail(NBody):
+class Tail(Body):
     def __init__(self, win, x, y, dir, color, nextBlock):
         super().__init__(win, x, y, dir, color)
         self.nextDir = dir
@@ -73,52 +43,46 @@ class Tail(NBody):
         self.dir = self.nextDir
         self.nextDir = self.nextBlock.dir
 
-class Body(Head):
-    def __init__(self, block, dir, nextBlock):
-        super().__init__(block, dir)
-        self.nextDir = dir
-        self.nextBlock = nextBlock
-
-    # Follows the blocks in front
-    def updateDir(self):
-        self.dir = self.nextDir
-        self.nextDir = self.nextBlock.dir
 
 
 class Snake:
     def __init__(self, win, size, color):
         self.blockList = []
 
-        # Create a block object
-        block = Block(win, 500, 500, color)
-
         # Create a head
-        head = Head(block, "Right")
+        head = Body(win, 500, 500, "Right", (255, 255, 255))
 
         # Add it to the block list
         self.blockList.append(head)
 
-        # Add a body to the snake
+        # Add a tail to the snake
+        offset = BLOCKSIZE
         for i in range(size-1):
-            block.x -= blockSize
-            body = Body(block, "Right", self.blockList[-1])
-            self.blockList.append(body)
+            offset -= BLOCKSIZE
+            tail = Tail(win, 500 - offset, 500, "Right", (255, 255, 255), self.blockList[-1])
+            self.blockList.append(tail)
 
     # Change direction of snake
     def changeDir(self, newDir):
         self.blockList[0].changeDir(newDir)
     
-    # Update snake
-    def update(self):
+    # Update snake directions
+    def update(self, newDir):
+        self.blockList[0].dir = newDir
         for block in self.blockList:
-            if isinstance(block, Body):
+            if isinstance(block, Tail):
                 block.updateDir()
     
     # Move the snake
     def move(self):
         for block in self.blockList:
             block.move()
-    
+
+    # Draw the snake
+    def draw(self):
+        for block in self.blockList:
+            block.draw()
+
     # Lengthen the snake by one
     def grow(self):
         pass
