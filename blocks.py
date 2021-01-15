@@ -1,6 +1,7 @@
 import pygame
 
 blockSize = 25
+SPEED = 5
 
 class Block:
     def __init__(self, win, x, y, color):
@@ -10,7 +11,7 @@ class Block:
         self.color = color
     
     def draw(self):
-        pygame.draw.rect(self.win, self.color, (self.x, self.y, blockSize, blockSize))
+        pygame.draw.rect(self.win, self.color, (self.x, (self.y + 5), blockSize, (blockSize - 5)))
 
 
 # Snake classes
@@ -35,6 +36,42 @@ class Head:
             self.block.x += blockSize
 
         self.block.draw()
+
+class NBody:
+    def __init__(self, win, x, y, dir, color ):
+        self.win = win
+        self.x = x
+        self.y = y
+        self.color = color
+        self.dir = dir
+
+    def changeDir(self, newDir):
+        self.dir = newDir
+
+    def move(self):
+        if self.dir == "Up":
+            self.y -= SPEED
+        elif self.dir == "Down":
+            self.y += SPEED
+        elif self.dir == "Left":
+            self.x -= SPEED
+        elif self.dir == "Right":
+            self.x += SPEED
+
+    def draw(self):
+        pygame.draw.rect(self.win, self.color, (self.x, (self.y + 5), blockSize, (blockSize - 5)))
+
+
+class Tail(NBody):
+    def __init__(self, win, x, y, dir, color, nextBlock):
+        super().__init__(win, x, y, dir, color)
+        self.nextDir = dir
+        self.nextBlock = nextBlock
+    
+    # Follows the block in front
+    def updateDir(self):
+        self.dir = self.nextDir
+        self.nextDir = self.nextBlock.dir
 
 class Body(Head):
     def __init__(self, block, dir, nextBlock):
@@ -81,3 +118,7 @@ class Snake:
     def move(self):
         for block in self.blockList:
             block.move()
+    
+    # Lengthen the snake by one
+    def grow(self):
+        pass
