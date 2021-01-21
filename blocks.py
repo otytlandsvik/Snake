@@ -33,10 +33,12 @@ class Body:
 
 
 class Tail(Body):
-    def __init__(self, win, x, y, dir, color, nextBlock):
+    def __init__(self, win, x, y, dir, color, nextBlock, listPos):
         super().__init__(win, x, y, dir, color)
         self.nextDir = dir
         self.nextBlock = nextBlock
+        self.delay = listPos
+        self.framesLeft = self.delay
     
     # Follows the block in front
     def updateDir(self):
@@ -58,9 +60,9 @@ class Snake:
         # Add a tail to the snake
         offset = BLOCKSIZE
         for i in range(size-1):
-            offset -= BLOCKSIZE
-            tail = Tail(win, 500 - offset, 500, "Right", (255, 255, 255), self.blockList[-1])
+            tail = Tail(win, (500 - offset), 500, "Right", (255, 255, 255), self.blockList[-1], len(self.blockList)-1)
             self.blockList.append(tail)
+            offset += BLOCKSIZE
 
     # Change direction of snake
     def changeDir(self, newDir):
@@ -71,7 +73,11 @@ class Snake:
         self.blockList[0].dir = newDir
         for block in self.blockList:
             if isinstance(block, Tail):
-                block.updateDir()
+                if (block.framesLeft == 0):
+                    block.updateDir()
+                    block.framesLeft = block.delay
+                else:
+                    block.framesLeft -= 1
     
     # Move the snake
     def move(self):
